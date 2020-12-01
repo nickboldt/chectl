@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright (c) 2019 Red Hat, Inc.
+# Copyright (c) 2019-2020 Red Hat, Inc.
 # This program and the accompanying materials are made
 # available under the terms of the Eclipse Public License 2.0
 # which is available at https://www.eclipse.org/legal/epl-2.0/
@@ -13,17 +13,28 @@
 set -e
 set -u
 
-init() {
-  RELEASE="$1"
-  BRANCH=$(echo $RELEASE | sed 's/.$/x/')
-  GIT_REMOTE_UPSTREAM="git@github.com:che-incubator/chectl.git"
+usage ()
+{
+  echo "Usage: $0 [VERSION TO RELEASE]"
+  echo "Example: $0 7.22.1"; echo
+  exit
 }
 
-check() {
-  if [[ $# -lt 1 ]]; then
-    echo "[ERROR] Wrong number of parameters.\nUsage: ./make-release.sh <version>"
-    exit 1
-  fi
+VERSION=""
+while [[ "$#" -gt 0 ]]; do
+  case $1 in
+    '-h'|'--help') usage;;
+    *) VERSION="$1";;
+  esac
+  shift 1
+done
+
+if [[ ! ${VERSION} ]]; then usage; fi
+
+init() {
+  VERSION="$1"
+  BRANCH=$(echo $VERSION | sed 's/.$/x/')
+  GIT_REMOTE_UPSTREAM="git@github.com:che-incubator/chectl.git"
 }
 
 apply_sed() {
@@ -108,6 +119,5 @@ run() {
   createPR
 }
 
-init $@
-check $@
-run $@
+init $VERSION
+run $VERSION
